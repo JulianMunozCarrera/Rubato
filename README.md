@@ -13,7 +13,7 @@ I play in a band, so I wanted to build the bandmate who never misses practice.
 - [`demo/band_only.flac`](demo/band_only.flac): a guitar on its own. It speeds up from 100 to 118 BPM and changes key halfway.
 - [`demo/band_plus_rubato.flac`](demo/band_plus_rubato.flac): the same guitar with Rubato playing along.
 
-The guitar in the demo is computer made (see "What is not done yet").
+Heads up: the guitar in the demo is computer made. Rubato has not been trained or tested on real recordings yet. That is coming soon (see "What is not done yet").
 
 ## The hard part
 
@@ -107,10 +107,10 @@ Each block is 11.6 ms of audio. Processing one block takes 0.14 ms typically and
 
 I would rather be upfront about this.
 
-- **Not tested with a real band yet.** All numbers come from computer made audio. The live mic mode is written but I have not measured it on stage. That is the next step.
+- **Not trained or tested on real sound yet.** Everything so far uses computer made audio. The models learned from songs played by a simple synth, and all the numbers above come from that same kind of audio. The live mic mode is written but I have not measured it with a real band.
+- **Real recordings are coming soon.** Next I am recording my own band, testing Rubato on those recordings, and retraining the chord model on real instruments. I will post the new numbers here, good or bad.
 - **Slow songs get counted double.** A 70 BPM ballad is often followed at 140. The beats still line up, there are just twice as many. On 5 of 30 songs the tempo was just wrong.
 - **Chord guessing needs repetition.** It works great on a 4 chord loop. On real songs, where the chords wander more, the bass is on the right chord at the start of the beat only 59% of the time. It fixes itself half a beat later, once it has heard the chord.
-- **The chord model learned from one synth sound.** It gets strummed guitar chords right in my tests, but real instruments will be harder.
 - **4 beats per bar only.** No waltzes.
 - **Drums are rules.** Only the bass and the chords are learned.
 - **Use headphones.** If Rubato comes out of speakers, the mic hears it and it starts following itself.
