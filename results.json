@@ -1,0 +1,54 @@
+{
+  "fake_band": {
+    "steady 110 BPM": {
+      "with_memory": 0.959,
+      "f_score": 0.983,
+      "typical_error_ms": 21.0,
+      "chord_heard": 1.0,
+      "without_memory": 0.76
+    },
+    "speeding up 95 to 130 BPM": {
+      "with_memory": 0.968,
+      "f_score": 0.984,
+      "typical_error_ms": 34.1,
+      "chord_heard": 1.0,
+      "without_memory": 0.763
+    },
+    "slowing down 125 to 90 BPM": {
+      "with_memory": 0.958,
+      "f_score": 0.987,
+      "typical_error_ms": 5.5,
+      "chord_heard": 1.0,
+      "without_memory": 0.756
+    },
+    "key change C to D": {
+      "with_memory": 0.935,
+      "f_score": 0.987,
+      "typical_error_ms": 20.8,
+      "chord_heard": 1.0,
+      "without_memory": 0.76
+    },
+    "sudden jump 100 to 132 BPM": {
+      "with_memory": 0.941,
+      "f_score": 0.931,
+      "typical_error_ms": 20.0,
+      "chord_heard": 1.0,
+      "without_memory": 0.758
+    }
+  },
+  "speed": {
+    "block_ms": 11.6,
+    "typical_ms": 0.121,
+    "slow_case_ms": 0.556,
+    "worst_ms": 6.844
+  },
+  "pop909": {
+    "songs": 30,
+    "mean_beat_f_score": 0.693,
+    "median_beat_f_score": 0.667,
+    "mean_beat_f_score_allowing_double_or_half": 0.817,
+    "typical_error_ms": 6.6,
+    "chord_heard": 0.372,
+    "songs_with_right_tempo": 15
+  }
+}
