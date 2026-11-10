@@ -1,9 +1,9 @@
 import numpy as np
 
-from bandmate.config import BLOCK_TIME
-from bandmate.engine import JamEngine
-from bandmate.testband import make_band
-from bandmate.audio_files import run_engine
+from rubato.config import BLOCK_TIME
+from rubato.engine import JamEngine
+from rubato.testband import make_band
+from rubato.audio_files import run_engine
 
 C, G, Am, F = (0, "maj"), (7, "maj"), (9, "min"), (5, "maj")
 

@@ -1,9 +1,9 @@
 import numpy as np
 
-from bandmate.config import SAMPLE_RATE, BLOCK
-from bandmate.features import ChromaExtractor
-from bandmate.chords import score_chords, CHORD_LABELS, SongMemory, KeyFinder
-from bandmate.testband import pluck, chord_notes
+from rubato.config import SAMPLE_RATE, BLOCK
+from rubato.features import ChromaExtractor
+from rubato.chords import score_chords, CHORD_LABELS, SongMemory, KeyFinder
+from rubato.testband import pluck, chord_notes
 
 
 def hear(chord):
@@ -45,3 +45,18 @@ def test_finds_the_key():
             finder.add(notes)
     # C major and A minor use the exact same notes, so either answer is fine.
     assert finder.key() in [(0, "maj"), (9, "min")]
+
+
+def test_chord_model_names_strummed_chords():
+    # The trained model only ever saw piano style pop songs.
+    # It should still get plain strummed guitar chords right.
+    from rubato.chords import ChordTracker
+    right = 0
+    for chord in CHORD_LABELS:
+        tracker = ChordTracker()
+        assert tracker.model is not None
+        notes, low_notes = hear(chord)
+        tracker.add(1.0, notes, low_notes, loudness=0.1)
+        if tracker.chord_between(0.0, 2.0) == chord:
+            right += 1
+    assert right >= 22  # at least 22 of the 24 chords

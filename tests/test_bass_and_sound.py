@@ -1,9 +1,9 @@
 import numpy as np
 
-from bandmate.config import BLOCK
-from bandmate.bass_brain import BassBrain, choice_to_midi, NUM_CHOICES, NO_CHANGE, FIRST_NOTE
-from bandmate.synth import BassSynth, DrumKit
-from bandmate.drums import drum_hits
+from rubato.config import BLOCK
+from rubato.bass_brain import BassBrain, choice_to_midi, NUM_CHOICES, NO_CHANGE, FIRST_NOTE
+from rubato.synth import BassSynth, DrumKit
+from rubato.drums import drum_hits
 
 
 def test_model_gives_a_valid_choice_every_step():

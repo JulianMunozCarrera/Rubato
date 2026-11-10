@@ -29,7 +29,7 @@ def save(path, audio):
 def run_engine(engine, audio):
     """
     Feed audio through the engine one block at a time, like a live mic would.
-    Returns (what the bandmate played, how long each block took to process).
+    Returns (what Rubato played, how long each block took to process).
     """
     played = np.zeros(len(audio), dtype=np.float32)
     took = []

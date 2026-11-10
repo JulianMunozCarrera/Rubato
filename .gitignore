@@ -2,4 +2,4 @@ __pycache__/
 .pytest_cache/
 data/
 *.wav
-with_bandmate.*
+with_rubato.*

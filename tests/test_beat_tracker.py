@@ -1,8 +1,8 @@
 import numpy as np
 
-from bandmate.config import SAMPLE_RATE
-from bandmate.engine import JamEngine
-from bandmate.audio_files import run_engine
+from rubato.config import SAMPLE_RATE
+from rubato.engine import JamEngine
+from rubato.audio_files import run_engine
 
 
 def click_track(bpm, seconds):

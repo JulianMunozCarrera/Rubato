@@ -4,7 +4,7 @@ A fake band for testing.
 We can't bring a real guitarist into an automated test, so this file
 makes guitar-like audio from a list of chords and a tempo. Because we
 made it, we know exactly where every beat and chord is. That lets us
-check if the bandmate got them right.
+check if Rubato got them right.
 """
 
 import numpy as np
@@ -67,3 +67,19 @@ def make_band(chords_per_bar, bpm_at, seed=0):
                 audio[start:start + len(note)] += note[:len(audio) - start]
 
     return audio, np.array(beat_times[:-1]), chord_for_beat
+
+
+def render_midi(midi, seconds):
+    """
+    Turn a MIDI song (loaded with pretty_midi) into audio, using the same
+    plucked sound as the fake band. Only the first 'seconds' are made.
+    """
+    audio = np.zeros(int(seconds * SAMPLE_RATE), dtype=np.float32)
+    for instrument in midi.instruments:
+        for note in instrument.notes:
+            if note.start >= seconds:
+                continue
+            sound = pluck(note.pitch, min(1.2, note.end - note.start + 0.3), note.velocity / 127 * 0.08)
+            start = int(note.start * SAMPLE_RATE)
+            audio[start:start + len(sound)] += sound[:len(audio) - start]
+    return audio

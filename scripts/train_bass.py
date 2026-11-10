@@ -25,7 +25,7 @@ import torch
 import torch.nn as nn
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from bandmate.bass_brain import REST, HOLD, FIRST_NOTE, NUM_CHOICES, NO_CHANGE, QUALITY_ID
+from rubato.bass_brain import REST, HOLD, FIRST_NOTE, NUM_CHOICES, NO_CHANGE, QUALITY_ID
 
 NOTE_NUMBER = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 MEMORY_SIZE = 96

@@ -1,0 +1,6 @@
+{
+  "model_accuracy": 0.7993,
+  "pattern_matching_accuracy": 0.5607,
+  "train_songs": 260,
+  "test_songs": 30
+}

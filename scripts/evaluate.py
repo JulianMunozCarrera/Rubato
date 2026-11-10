@@ -1,7 +1,7 @@
 """
-Checks how well the bandmate follows a band, and prints a report.
+Checks how well Rubato follows a band, and prints a report.
 
-Part 1 uses our fake guitar band (see bandmate/testband.py).
+Part 1 uses our fake guitar band (see rubato/testband.py).
 Part 2 (optional) uses real pop songs from the POP909 test set, turned
 into audio with a simple synth. Those songs were never used in training.
 
@@ -17,10 +17,10 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from bandmate.config import SAMPLE_RATE, BLOCK_TIME
-from bandmate.engine import JamEngine
-from bandmate.testband import make_band, pluck
-from bandmate.audio_files import run_engine, save
+from rubato.config import SAMPLE_RATE, BLOCK_TIME
+from rubato.engine import JamEngine
+from rubato.testband import make_band, render_midi
+from rubato.audio_files import run_engine, save
 
 C, D, E, F, G, A, B = 0, 2, 4, 5, 7, 9, 11
 
@@ -49,23 +49,38 @@ def score_beats(our_beats, true_beats, skip_first=6.0, window=0.07):
             "typical_error_ms": round(1000 * float(np.median(errors)), 1) if errors else None}
 
 
-def score_chords(engine, true_beats, chord_at_beat, skip_first=6.0):
+def score_chords(engine, chord_at, skip_first=6.0):
     """
-    Two chord scores:
-      heard:  did we name the chord right after hearing the whole beat?
-      on_time: was the bass ALREADY on the right chord when the beat started?
-    """
-    def right_chord(beat_time):
-        nearest = int(np.argmin(np.abs(true_beats - beat_time)))
-        return chord_at_beat[nearest]
+    chord_at: a function that gives the real chord at any time.
 
+    Two chord scores:
+      heard:   did we name the chord right after hearing the whole beat?
+      on_time: was the bass ALREADY on the right chord when the beat started?
+
+    We check the real chord at the middle of each of our beats.
+    Moments where the song has no chord label are skipped.
+    """
     when = dict(engine.log["beats"])
+    half_beat = engine.beat.period / 2
     result = {}
     for name, key in (("heard", "heard"), ("on_time", "played_over")):
-        marks = [chord == right_chord(when[n]) for n, chord in engine.log[key]
-                 if n in when and when[n] >= skip_first]
+        marks = []
+        for number, chord in engine.log[key]:
+            if number not in when or when[number] < skip_first:
+                continue
+            real = chord_at(when[number] + half_beat)
+            if real[0] is not None:
+                marks.append(chord == real)
         result[name] = round(float(np.mean(marks)), 3) if marks else None
     return result
+
+
+def chord_lookup(beats, chord_at_beat):
+    """For the fake band: make a 'chord at this time' function from the beat list."""
+    def chord_at(time):
+        index = int(np.searchsorted(beats, time, side="right")) - 1
+        return chord_at_beat[min(max(index, 0), len(chord_at_beat) - 1)]
+    return chord_at
 
 
 def fake_band_tests():
@@ -78,19 +93,6 @@ def fake_band_tests():
         "key change C to D": (loop * 5 + loop_up * 5, lambda beat: 104),
         "sudden jump 100 to 132 BPM": (loop * 10, lambda beat: 100 if beat < 64 else 132),
     }
-
-
-def render_midi(midi, seconds):
-    """Turn a MIDI song into audio using the same plucked sound as the fake band."""
-    audio = np.zeros(int(seconds * SAMPLE_RATE), dtype=np.float32)
-    for instrument in midi.instruments:
-        for note in instrument.notes:
-            if note.start >= seconds:
-                continue
-            sound = pluck(note.pitch, min(1.2, note.end - note.start + 0.3), note.velocity / 127 * 0.08)
-            start = int(note.start * SAMPLE_RATE)
-            audio[start:start + len(sound)] += sound[:len(audio) - start]
-    return audio
 
 
 def main():
@@ -111,10 +113,11 @@ def main():
             engine = JamEngine(use_memory=use_memory)
             played, took = run_engine(engine, audio)
             block_times.append(took)
-            row[label] = score_chords(engine, beats, chord_at_beat)["on_time"]
+            chord_at = chord_lookup(beats, chord_at_beat)
+            row[label] = score_chords(engine, chord_at)["on_time"]
             if use_memory:
                 row.update(score_beats([t for _, t in engine.log["beats"]], beats))
-                row["chord_heard"] = score_chords(engine, beats, chord_at_beat)["heard"]
+                row["chord_heard"] = score_chords(engine, chord_at)["heard"]
                 if args.demo:
                     os.makedirs(args.demo, exist_ok=True)
                     save(os.path.join(args.demo, name.replace(" ", "_") + ".wav"), audio + played)
@@ -139,7 +142,8 @@ def main():
         from train_bass import read_chord
         names = json.load(open("models/bass_training.json"))["test_song_names"][:args.songs]
         print(f"\nPart 2: {len(names)} real pop songs the model never saw (first 60 s each)")
-        f_scores, relaxed, errors, heard, right_tempo = [], [], [], [], 0
+        f_scores, relaxed, errors, heard, heard_simple, on_time, right_tempo = [], [], [], [], [], [], 0
+        right_or_double = 0
         for n in names:
             folder = os.path.join(args.pop909, n)
             midi = pretty_midi.PrettyMIDI(os.path.join(folder, n + ".mid"))
@@ -148,7 +152,9 @@ def main():
             beats = beats[beats < 60.0]  # we only made the first 60 seconds of audio
             labels = [(float(a), float(b), read_chord(c)) for a, b, c in
                       (line.split() for line in open(os.path.join(folder, "chord_midi.txt")))]
-            chord_at_beat = [next((c for a, b, c in labels if a <= t + 0.01 < b), (None, None)) for t in beats]
+
+            def chord_at(time):
+                return next((c for a, b, c in labels if a <= time < b), (None, None))
 
             engine = JamEngine()
             run_engine(engine, audio)
@@ -164,20 +170,34 @@ def main():
                                score_beats(ours, beats[1::2])["f_score"]))
             if s["typical_error_ms"] is not None:
                 errors.append(s["typical_error_ms"])
-            c = score_chords(engine, beats, np.array(chord_at_beat, dtype=object))["heard"]
+            c = score_chords(engine, chord_at)
+            if c["heard"] is not None:
+                heard.append(c["heard"])
+                on_time.append(c["on_time"])
+
+            # Same song again with plain pattern matching, to compare.
+            simple = JamEngine(chord_model=False, bass=False, drums=False)
+            run_engine(simple, audio)
+            c = score_chords(simple, chord_at)["heard"]
             if c is not None:
-                heard.append(c)
+                heard_simple.append(c)
             true_bpm = 60 / np.median(np.diff(beats))
-            if abs(engine.beat.bpm / true_bpm - 1) < 0.04:
+            ratio = engine.beat.bpm / true_bpm
+            if abs(ratio - 1) < 0.04:
                 right_tempo += 1
+            if min(abs(ratio - 1), abs(ratio - 2), abs(ratio - 0.5)) < 0.04:
+                right_or_double += 1
         report["pop909"] = {
             "songs": len(names),
             "mean_beat_f_score": round(float(np.mean(f_scores)), 3),
             "median_beat_f_score": round(float(np.median(f_scores)), 3),
             "mean_beat_f_score_allowing_double_or_half": round(float(np.mean(relaxed)), 3),
             "typical_error_ms": round(float(np.median(errors)), 1),
-            "chord_heard": round(float(np.mean(heard)), 3),
+            "chord_heard_with_model": round(float(np.mean(heard)), 3),
+            "chord_heard_with_pattern_matching": round(float(np.mean(heard_simple)), 3),
+            "bass_on_right_chord_at_the_beat": round(float(np.mean(on_time)), 3),
             "songs_with_right_tempo": right_tempo,
+            "songs_with_right_or_double_or_half_tempo": right_or_double,
         }
         print(" ", report["pop909"])
 

@@ -8,11 +8,11 @@
       "without_memory": 0.76
     },
     "speeding up 95 to 130 BPM": {
-      "with_memory": 0.968,
+      "with_memory": 0.936,
       "f_score": 0.984,
       "typical_error_ms": 34.1,
-      "chord_heard": 1.0,
-      "without_memory": 0.763
+      "chord_heard": 0.994,
+      "without_memory": 0.756
     },
     "slowing down 125 to 90 BPM": {
       "with_memory": 0.958,
@@ -22,33 +22,36 @@
       "without_memory": 0.756
     },
     "key change C to D": {
-      "with_memory": 0.935,
+      "with_memory": 0.896,
       "f_score": 0.987,
       "typical_error_ms": 20.8,
-      "chord_heard": 1.0,
-      "without_memory": 0.76
+      "chord_heard": 0.967,
+      "without_memory": 0.727
     },
     "sudden jump 100 to 132 BPM": {
-      "with_memory": 0.941,
-      "f_score": 0.931,
+      "with_memory": 0.915,
+      "f_score": 0.924,
       "typical_error_ms": 20.0,
-      "chord_heard": 1.0,
-      "without_memory": 0.758
+      "chord_heard": 0.993,
+      "without_memory": 0.752
     }
   },
   "speed": {
     "block_ms": 11.6,
-    "typical_ms": 0.121,
-    "slow_case_ms": 0.556,
-    "worst_ms": 6.844
+    "typical_ms": 0.136,
+    "slow_case_ms": 0.645,
+    "worst_ms": 3.441
   },
   "pop909": {
     "songs": 30,
-    "mean_beat_f_score": 0.693,
-    "median_beat_f_score": 0.667,
-    "mean_beat_f_score_allowing_double_or_half": 0.817,
-    "typical_error_ms": 6.6,
-    "chord_heard": 0.372,
-    "songs_with_right_tempo": 15
+    "mean_beat_f_score": 0.7,
+    "median_beat_f_score": 0.669,
+    "mean_beat_f_score_allowing_double_or_half": 0.826,
+    "typical_error_ms": 6.7,
+    "chord_heard_with_model": 0.781,
+    "chord_heard_with_pattern_matching": 0.521,
+    "bass_on_right_chord_at_the_beat": 0.586,
+    "songs_with_right_tempo": 16,
+    "songs_with_right_or_double_or_half_tempo": 25
   }
 }

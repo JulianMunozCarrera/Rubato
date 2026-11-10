@@ -22,12 +22,13 @@ from .drums import drum_hits
 
 
 class JamEngine:
-    def __init__(self, sound_delay=0.0, use_memory=True, seed=0, bass=True, drums=True):
+    def __init__(self, sound_delay=0.0, use_memory=True, seed=0, bass=True, drums=True, chord_model=True):
         """
         sound_delay: how long it takes for sound to get from this program
                      to the speakers and back into the mic, in seconds.
                      We play everything this much EARLY so it lands on time.
         use_memory:  turn the chord guessing on or off (off is only for testing).
+        chord_model: use the trained chord model. Off means simple pattern matching.
         """
         self.sound_delay = sound_delay
         self.use_memory = use_memory
@@ -37,7 +38,7 @@ class JamEngine:
         self.onsets = OnsetDetector()
         self.chroma = ChromaExtractor()
         self.beat = BeatTracker()
-        self.chords = ChordTracker()
+        self.chords = ChordTracker(use_model=chord_model)
         self.key = KeyFinder()
         self.memory = SongMemory()
         self.brain = BassBrain(seed=seed)
@@ -109,7 +110,7 @@ class JamEngine:
         # Now that the last beat is over, work out which chord it was.
         if self.beat_started is not None:
             last_number, last_time = self.beat_started
-            heard = self.chords.chord_between(last_time + 0.03, when, stick_to=self.heard_chord)
+            heard = self.chords.chord_between(last_time + 0.03, when, stick_to=self.heard_chord, beat_is_over=True)
             if heard is not None:
                 if heard != self.heard_chord:
                     # Chords usually change on beat 1. Counting where changes

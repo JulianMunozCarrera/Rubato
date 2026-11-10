@@ -23,6 +23,9 @@ ONSET_DELAY = 0.008
 class BeatTracker:
     HISTORY_SECONDS = 6.0   # how much recent music we remember
     UPDATE_EVERY = 8        # redo the math every 8 blocks (about 93 ms)
+    EXTRA_PROOF = [(2, 0.5), (3, 0.33), (4, 0.25)]  # (how many beats apart, how much it counts)
+    USUAL_BEAT = 0.6        # seconds per beat that we lean towards (100 BPM)
+    USUAL_SPREAD = 0.6      # how strongly we lean. Smaller = stronger.
 
     def __init__(self):
         self.size = int(self.HISTORY_SECONDS / BLOCK_TIME)
@@ -87,15 +90,17 @@ class BeatTracker:
         lags = np.arange(self.min_lag, self.max_lag + 1)
         score = match[lags].copy()
 
-        # A real beat also lines up at double the delay, so add that as extra proof.
-        double = lags * 2
-        ok = double < n
-        score[ok] += 0.5 * match[double[ok]]
+        # A real beat also lines up at 2, 3 and 4 times the delay, so we
+        # add those as extra proof. Each one counts a bit less.
+        for times, weight in self.EXTRA_PROOF:
+            further = lags * times
+            ok = further < n
+            score[ok] += weight * match[further[ok]]
 
-        # Prefer tempos near 100 BPM, where most songs live. This helps us
-        # not pick half speed or double speed by mistake.
+        # Prefer tempos near the middle of the range, where most songs live.
+        # This helps us not pick half speed or double speed by mistake.
         periods = lags * BLOCK_TIME
-        score *= np.exp(-0.5 * (np.log2(periods / 0.6) / 0.6) ** 2)
+        score *= np.exp(-0.5 * (np.log2(periods / self.USUAL_BEAT) / self.USUAL_SPREAD) ** 2)
 
         best = int(np.argmax(score))
         lag = float(lags[best])

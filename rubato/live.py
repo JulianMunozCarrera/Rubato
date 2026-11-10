@@ -1,10 +1,10 @@
 """
-Run the bandmate live with a microphone and speakers.
+Run Rubato live with a microphone and speakers.
 
-    python -m bandmate.live
+    python -m rubato.live
 
 Use headphones! If the bass and drums come out of speakers, the mic
-hears them too and the bandmate starts listening to itself.
+hears them too and Rubato starts listening to itself.
 """
 
 import argparse
